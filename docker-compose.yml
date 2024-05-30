@@ -1,0 +1,18 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - .:/app
+
+
+#    Docker Compose is most useful to start multiple Docker containers at the same time, specifying configuration values for them and dependencies between them.
+
+
+#                 COMMAND LINE
+#   docker compose  up                  (start all your services.)
+#   docker compose down                 (Stop and remove containers, networks, etc.:)
+#   docker compose stop                 (Stop containers without removing them)
+#   docker compose start                (Start stopped containers)
