@@ -1,15 +1,73 @@
-from flask import Flask, request, jsonify
-from services.db_services.db import *
 import os
-import services
+
+from flask import Flask, jsonify
+from flask_jwt_extended import JWTManager
+
+from services.db_services.db import db
+
+from end_points.delete_item import dit
+from end_points.item_by_id import itd
+from end_points.items import it
+from end_points.create_item import pit
+from end_points.update_item import uit
+from end_points.register import ru
+from end_points.get_users import gu
+from end_points.get_user_by_id import guid
+from end_points.delete_user import duid
+from end_points.update_user import upuid
+from end_points.login import lg
+from end_points.logout import lgt
+from end_points.refresh import rf
+
+import jwt_callbacks as jwt_cb
+import error_handlers as eh
 
 
 db_url = ''
 
 app = Flask(__name__)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url or os.getenv('DATABASE_URL', 'sqlite:///data.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = Flask
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+# command ==>  python, import secrets, secrets.SystemRandom().getrandbits(120)
+app.config['JWT_SECRET_KEY'] = '447310468884973093771474415448469063'  # This is used so that when a user sends back a JWT to verify who they are, our app can check the secret key and can use it to verify that this app generated the JWT and therefore the JWT is valid.
+jwt = JWTManager(app)
+
+
+# Set the JWT callbacks
+jwt.additional_claims_loader(jwt_cb.add_claims_to_access_token)
+jwt.token_in_blocklist_loader(jwt_cb.check_if_token_in_blocklist)
+jwt.revoked_token_loader(jwt_cb.revoked_token_callback)
+jwt.needs_fresh_token_loader(jwt_cb.token_not_fresh_callback)
+jwt.expired_token_loader(jwt_cb.expired_token_callback)
+jwt.invalid_token_loader(jwt_cb.invalid_token_callback)
+jwt.unauthorized_loader(jwt_cb.unauthorized_callback)
+
+
+app.register_blueprint(it, url_prefix='')
+app.register_blueprint(itd, url_prefix='')
+app.register_blueprint(pit, url_prefix='')
+app.register_blueprint(dit, url_prefix='')
+app.register_blueprint(uit, url_prefix='')
+app.register_blueprint(ru, url_prefix='')
+app.register_blueprint(gu, url_prefix='')
+app.register_blueprint(guid, url_prefix='')
+app.register_blueprint(duid, url_prefix='')
+app.register_blueprint(upuid, url_prefix='')
+app.register_blueprint(lg, url_prefix='')
+app.register_blueprint(lgt, url_prefix='')
+app.register_blueprint(rf, url_prefix='')
+
+app.errorhandler(400)(eh.handle_400_error)
+app.errorhandler(401)(eh.handle_401_error)
+app.errorhandler(403)(eh.handle_403_error)
+app.errorhandler(404)(eh.handle_404_error)
+app.errorhandler(405)(eh.handle_405_error)
+app.errorhandler(409)(eh.handle_409_error)
+app.errorhandler(429)(eh.handle_429_error)
+app.errorhandler(500)(eh.handle_500_error)
 
 
 @app.before_request
@@ -17,74 +75,9 @@ def create_table():
     db.create_all()
 
 
-@app.errorhandler(404)
-def not_found_error(e):
-    return jsonify({'message': 'Not Found: Please check and confirm your request'}), 404
-
-
-@app.errorhandler(500)
-def handle_500_error(e):
-    app.logger.error('Server Error: %s', e)
-    return jsonify({'message': 'Internal Server Error, could not retrieve data'}), 500
-
-
 @app.route('/')
 def welcome():
     return 'Welcome to our store!'
-
-
-@app.route('/items')
-def get_items():
-    return jsonify({'all available items': items})
-
-
-@app.route('/items/<int:item_id>')
-def get_item_id(item_id):
-    if item_id in items:
-        return jsonify({'item found': items[item_id], 'message': 'Data retrieved successfully'}), 200
-    else:
-        return jsonify({'message': 'No item found for the given ID'}), 404
-
-
-@app.route('/items', methods=['POST'])
-def create_item():
-    request_data = request.get_json()
-    if 'name' not in request_data or 'price' not in request_data:
-        return jsonify({'message': "Bad request. Ensure 'name' and 'price' are included in the request."}), 400
-
-    for item in items.values():
-        if request_data['name'] == item['name']:
-            return jsonify({'message': 'Bad request: Item already exists.'}), 400
-
-    new_item_id = max(items.keys()) + 1
-    new_item = {'name': request_data['name'], 'price': request_data['price']}
-    items[new_item_id] = new_item
-    return jsonify({'message': 'Item added successfully', 'items': items}), 201
-
-
-@app.route('/items/<int:item_id>', methods=['DELETE'])
-def delete_item_id(item_id):
-    if item_id in items:
-        del items[item_id]
-        return jsonify({'message': 'Item deleted successfully'}), 200
-    else:
-        return jsonify({'message': 'No item found for the given ID'}), 404
-
-
-@app.route('/items/<int:item_id>', methods=['PUT'])
-def update_item(item_id):
-    if item_id not in items:
-        return jsonify({'message': 'No item found for the given ID'}), 404
-
-    request_data = request.get_json()
-    if not request_data:
-        return jsonify({'message': 'Bad request. No data provided.'}), 400
-
-    item = items[item_id]
-    for key, value in request_data.items():
-        if key in item:
-            item[key] = value
-    return jsonify({'message': 'Item updated successfully', 'item': items[item_id]}), 200
 
 
 if __name__ == '__main__':
