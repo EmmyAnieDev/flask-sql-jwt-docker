@@ -18,7 +18,6 @@ def handle_405_error(e):
 
 
 def handle_500_error(e):
-    app.logger.error('Server Error: %s', e)
     return jsonify({'message': 'Internal Server Error, could not retrieve data'}), 500
 
 
@@ -32,7 +31,3 @@ def handle_409_error(e):
 
 def handle_429_error(e):
     return jsonify({'message': 'Too Many Requests: You have sent too many requests in a given amount of time'}), 429
-
-
-# Make sure to import the app object if you need to use it
-from main import app

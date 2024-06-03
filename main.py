@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 
 from services.db_services.db import db
 
@@ -30,6 +31,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url or os.getenv('DATABASE_URL', 'sqlite:///data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+migrate = Migrate(app, db)   # add below [db.init_app(app)]   commands 'flask db init' then delete data.db, 'flask db migrate' 'flask db upgrade'
 
 # command ==>  python, import secrets, secrets.SystemRandom().getrandbits(120)
 app.config['JWT_SECRET_KEY'] = '447310468884973093771474415448469063'  # This is used so that when a user sends back a JWT to verify who they are, our app can check the secret key and can use it to verify that this app generated the JWT and therefore the JWT is valid.
