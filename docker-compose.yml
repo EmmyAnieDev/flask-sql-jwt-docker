@@ -3,10 +3,24 @@ services:
   web:
     build: .
     ports:
-      - "5001:5001"
+      - "5001:80"
     volumes:
       - .:/app
-
+#    depends_on:
+#      - db
+#    env_file:
+#      - ./.env
+#  db:
+#    image: postgres:16.3
+#    environment:
+#      POSTGRES_PASSWORD: password
+#      POSTGRES_DB: myapp
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data    # (postgres_data) is the name of volume we are telling docker we want to store in our machine
+#volumes:
+#  postgres_data:   # after this run  docker compose  up
 
 #    Docker Compose is most useful to start multiple Docker containers at the same time, specifying configuration values for them and dependencies between them.
 

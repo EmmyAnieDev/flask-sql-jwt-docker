@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from models.schemas import UserSchema
 from models.user_model import UserModel
 from services.db_services.db import db
+from services.send_email.send_regsitration_email import *
 
 ru = Blueprint('register', __name__, template_folder='templates', static_folder='static')
 
@@ -18,8 +19,8 @@ def create_user():
         user_data = request.get_json()
     except ValidationError as err:
         return jsonify(err.messages), 400
-    if 'username' not in user_data or 'password' not in user_data or 'user_type' not in user_data:
-        return jsonify({'message': "Bad request. Ensure 'username', 'password' and 'user_type' are provided."}), 400
+    if 'username' not in user_data or 'password' not in user_data or 'user_type' not in user_data or 'email' not in user_data:
+        return jsonify({'message': "Bad request. Ensure 'username', 'password', 'user_type' and 'email' are provided."}), 400
 
     existing_user = UserModel.query.filter_by(username=user_data['username']).first()
     if existing_user:
@@ -28,7 +29,8 @@ def create_user():
     user = UserModel(
         username=user_data['username'],
         password=pbkdf2_sha256.hash(user_data['password']),
-        user_type=user_data['user_type']
+        user_type=user_data['user_type'],
+        email=user_data['email']
     )
 
     try:

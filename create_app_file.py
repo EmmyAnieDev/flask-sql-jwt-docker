@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify
+from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 
@@ -25,7 +25,11 @@ import jwt_callbacks as jwt_cb
 import error_handlers as eh
 
 
+# db_url = 'postgres://flask_docker_user:4HcYLhcFpkDrtuAtu8uaRcFPXEiNos6i@dpg-cpfs0f8l5elc738iiv2g-a.frankfurt-postgres.render.com/flask_docker'
+# db_url='postgres://flask_docker_user:4HcYLhcFpkDrtuAtu8uaRcFPXEiNos6i@dpg-cpfs0f8l5elc738iiv2g-a/flask_docker'
+
 db_url = ''
+
 
 def create_app():
     app = Flask(__name__)

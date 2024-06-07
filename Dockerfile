@@ -3,6 +3,7 @@ FROM python:3.11
 
 # Make port 5001 available to the world outside this container. (PORT OUR FLASK APP WILL RUN IN).
 #EXPOSE 5001
+EXPOSE 80
 
 # Set the working directory in the container
 WORKDIR /app
